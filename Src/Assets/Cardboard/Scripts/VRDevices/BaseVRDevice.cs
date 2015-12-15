@@ -28,6 +28,11 @@ using System;
 // Represents a vr device that this plugin interacts with.
 // Please do not interact with this class directly, instead use the interface in Cardboard.cs.
 public abstract class BaseVRDevice {
+  public struct DisplayMetrics {
+    public int width, height;
+    public float xdpi, ydpi;
+  }
+
   private static BaseVRDevice device = null;
 
   protected BaseVRDevice() {
@@ -37,6 +42,28 @@ public abstract class BaseVRDevice {
   public CardboardProfile Profile { get; protected set; }
 
   public abstract void Init();
+
+  public abstract void SetVRModeEnabled(bool enabled);
+  public abstract void SetDistortionCorrectionEnabled(bool enabled);
+  public abstract void SetStereoScreen(RenderTexture stereoScreen);
+
+  public abstract void SetSettingsButtonEnabled(bool enabled);
+  public abstract void SetAlignmentMarkerEnabled(bool enabled);
+  public abstract void SetVRBackButtonEnabled(bool enabled);
+  public abstract void SetShowVrBackButtonOnlyInVR(bool only);
+
+  public abstract void SetTapIsTrigger(bool enabled);
+  public abstract void SetNeckModelScale(float scale);
+  public abstract void SetAutoDriftCorrectionEnabled(bool enabled);
+  public abstract void SetElectronicDisplayStabilizationEnabled(bool enabled);
+
+  // Returns landscape orientation display metrics.
+  public virtual DisplayMetrics GetDisplayMetrics() {
+    // Always return landscape orientation.
+    int width = Mathf.Max(Screen.width, Screen.height);
+    int height = Mathf.Min(Screen.width, Screen.height);
+    return new DisplayMetrics { width = width, height = height, xdpi = Screen.dpi, ydpi = Screen.dpi };
+  }
 
   public virtual bool SupportsNativeDistortionCorrection(List<string> diagnostics) {
     bool support = true;
@@ -52,12 +79,7 @@ public abstract class BaseVRDevice {
   }
 
   public virtual bool SupportsNativeUILayer(List<string> diagnostics) {
-    bool support = true;
-    if (!SupportsUnityRenderEvent()) {
-      diagnostics.Add("Unity 4.5+ is needed for UnityRenderEvent");
-      support = false;
-    }
-    return support;
+    return true;
   }
 
   public bool SupportsUnityRenderEvent() {
@@ -76,18 +98,26 @@ public abstract class BaseVRDevice {
   }
 
   public virtual RenderTexture CreateStereoScreen() {
-    Debug.Log("Creating new default cardboard screen texture.");
-    return new RenderTexture(Screen.width, Screen.height, 16, RenderTextureFormat.RGB565);
+    float scale = Cardboard.SDK.StereoScreenScale;
+    int width = Mathf.RoundToInt(recommendedTextureSize.x * scale);
+    int height = Mathf.RoundToInt(recommendedTextureSize.y * scale);
+    Debug.Log("Creating new default cardboard screen texture "
+        + width+ "x" + height + ".");
+    var rt = new RenderTexture(width, height, 24, RenderTextureFormat.Default);
+    rt.anisoLevel = 0;
+    rt.antiAliasing = Mathf.Max(QualitySettings.antiAliasing, 1);
+    return rt;
   }
 
-  public abstract void SetDistortionCorrectionEnabled(bool enabled);
-  public abstract void SetVRModeEnabled(bool enabled);
-  public abstract void SetAlignmentMarkerEnabled(bool enabled);
-  public abstract void SetSettingsButtonEnabled(bool enabled);
-  public abstract void SetNeckModelScale(float scale);
-  public abstract void SetAutoDriftCorrectionEnabled(bool enabled);
+  // Returns true if the URI was set as the device profile, else false.  A default URI
+  // is only accepted if the user has not scanned a QR code already.
+  public virtual bool SetDefaultDeviceProfile(Uri uri) {
+    return false;
+  }
 
-  public abstract void SetStereoScreen(RenderTexture stereoScreen);
+  public virtual void ShowSettingsDialog() {
+    // Do nothing.
+  }
 
   public Pose3D GetHeadPose() {
     return this.headPose;
@@ -143,8 +173,12 @@ public abstract class BaseVRDevice {
   protected Rect leftEyeUndistortedViewport;
   protected Rect rightEyeUndistortedViewport;
 
+  protected Vector2 recommendedTextureSize;
+
   public bool triggered;
   public bool tilted;
+  public bool profileChanged;
+  public bool backButtonPressed;
 
   public abstract void UpdateState();
 
@@ -152,7 +186,7 @@ public abstract class BaseVRDevice {
 
   public abstract void Recenter();
 
-  public abstract void PostRender(bool vrMode);
+  public abstract void PostRender();
 
   public virtual void SetTouchCoordinates(int x, int y) {
     // Do nothing
@@ -168,8 +202,8 @@ public abstract class BaseVRDevice {
     // Do nothing.
   }
 
-  public virtual void Reset() {
-    Recenter();
+  public virtual void OnLevelLoaded(int level) {
+    // Do nothing.
   }
 
   public virtual void OnApplicationQuit() {
@@ -190,9 +224,9 @@ public abstract class BaseVRDevice {
     leftEyePose.Set(leftEyeView);
 
     float[] rect = new float[4];
-    Profile.GetLeftEyeVisibleTanAngles(ref rect);
+    Profile.GetLeftEyeVisibleTanAngles(rect);
     leftEyeDistortedProjection = MakeProjection(rect[0], rect[1], rect[2], rect[3], 1, 1000);
-    Profile.GetLeftEyeNoLensTanAngles(ref rect);
+    Profile.GetLeftEyeNoLensTanAngles(rect);
     leftEyeUndistortedProjection = MakeProjection(rect[0], rect[1], rect[2], rect[3], 1, 1000);
 
     leftEyeUndistortedViewport = Profile.GetLeftEyeVisibleScreenRect(rect);
@@ -211,6 +245,11 @@ public abstract class BaseVRDevice {
     rightEyeUndistortedViewport = leftEyeUndistortedViewport;
     rightEyeUndistortedViewport.x = 1 - rightEyeUndistortedViewport.xMax;
     rightEyeDistortedViewport = rightEyeUndistortedViewport;
+
+    float width = Screen.width * (leftEyeUndistortedViewport.width+rightEyeDistortedViewport.width);
+    float height = Screen.height * Mathf.Max(leftEyeUndistortedViewport.height,
+                                             rightEyeUndistortedViewport.height);
+    recommendedTextureSize = new Vector2(width, height);
   }
 
   private static Matrix4x4 MakeProjection(float l, float t, float r, float b, float n, float f) {
@@ -230,12 +269,11 @@ public abstract class BaseVRDevice {
 #if UNITY_EDITOR
       device = new UnityEditorDevice();
 #elif ANDROID_DEVICE
-      //device = new CardboardAndroidDevice();
-      device = new AndroidVRDevice();
+      device = new CardboardAndroidDevice();
 #elif IPHONE_DEVICE
-      device = new iOSVRDevice();
+      device = new CardboardiOSDevice();
 #else
-      throw new InvalidOperationException();
+      throw new InvalidOperationException("Unsupported device.");
 #endif
     }
     return device;

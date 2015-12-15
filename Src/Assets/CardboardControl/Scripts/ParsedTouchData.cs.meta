@@ -1,10 +1,6 @@
 fileFormatVersion: 2
-guid: c8d6cca2d32bc45108a54a8275af2efc
-labels:
-- Google
-- Cardboard
-- Android
-timeCreated: 1437963285
+guid: e0cadf7910482464282c579ecf18a8c2
+timeCreated: 1441061517
 licenseType: Free
 MonoImporter:
   serializedVersion: 2

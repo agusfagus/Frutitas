@@ -22,11 +22,13 @@ public class ExampleCharacterController : MonoBehaviour {
 
     // When the thing we're looking at changes, determined by a gaze
     // The gaze distance and layer mask are public as configurable in the inspector
-    cardboard.gaze.OnChange += CardboardFocus;
+    cardboard.gaze.OnChange += CardboardGazeChange;
 
-    // Not used here is the OnTilt delegate
-    // This is triggered on rotating the device to Portrait mode
-    // cardboard.box.OnTilt += ...
+    // When we've been staring at an object
+    cardboard.gaze.OnStare += CardboardStare;
+
+    // When we rotate the device into portrait mode
+    cardboard.box.OnTilt += CardboardMagnetReset;
   }
 
 
@@ -34,17 +36,17 @@ public class ExampleCharacterController : MonoBehaviour {
   /*
   * In this demo, we randomize object colours for triggered events
   */
-  public void CardboardDown(object sender) {
+  private void CardboardDown(object sender) {
     Debug.Log("Trigger went down");
     ChangeObjectColor("SphereDown");
   }
 
-  public void CardboardUp(object sender) {
+  private void CardboardUp(object sender) {
     Debug.Log("Trigger came up");
     ChangeObjectColor("SphereUp");
   }
 
-  public void CardboardClick(object sender) {
+  private void CardboardClick(object sender) {
     ChangeObjectColor("SphereClick");
 
     TextMesh textMesh = GameObject.Find("SphereClick/Counter").GetComponent<TextMesh>();
@@ -53,26 +55,71 @@ public class ExampleCharacterController : MonoBehaviour {
 
     // With the cardboard object, we can grab information from various controls
     // If the raycast doesn't find anything then the focused object will be null
-    string name = cardboard.gaze.Object() == null ? "nothing" : cardboard.gaze.Object().name;
+    string name = cardboard.gaze.IsHeld() ? cardboard.gaze.Object().name : "nothing";
     float count = cardboard.gaze.SecondsHeld();
     Debug.Log("We've focused on "+name+" for "+count+" seconds.");
 
     // If you need more raycast data from cardboard.gaze, the RaycastHit is exposed as gaze.Hit
   }
 
-  public void CardboardFocus(object sender) {
-    // For more event-driven code, you can grab the data from the sender
+  private void CardboardGazeChange(object sender) {
+    // You can grab the data from the sender instead of the CardboardControl object
     CardboardControlGaze gaze = sender as CardboardControlGaze;
+    // We can access to the object we're looking at
     // gaze.IsHeld will make sure the gaze.Object isn't null
     if (gaze.IsHeld() && gaze.Object().name.Contains("Cube")) {
       ChangeObjectColor(gaze.Object().name);
+      // Highlighting can help identify which objects can be interacted with
+      // The pointer is hidden by default but we already toggled that in the inspector
+      cardboard.pointer.Highlight(Color.red);
+    }
+    // We also can access to the last object we looked at
+    // gaze.WasHeld will make sure the gaze.PreviousObject isn't null
+    if (gaze.WasHeld() && gaze.PreviousObject().name.Contains("Cube")) {
+      ResetObjectColor(gaze.PreviousObject().name);
+      // Use these to undo pointer hiding and highlighting
+      cardboard.pointer.Show();
+      cardboard.pointer.ClearHighlight();
     }
   }
 
-  public void ChangeObjectColor(string name) {
+  private void CardboardStare(object sender) {
+    CardboardControlGaze gaze = sender as CardboardControlGaze;
+    if (gaze.IsHeld() && gaze.Object().name.Contains("Cube")) {
+      // Be sure to hide the cursor when it's not needed
+      cardboard.pointer.Hide();
+    }
+  }
+
+  private void CardboardMagnetReset(object sender) {
+    // Resetting the magnet will reset the polarity if up and down are confused
+    // This occasionally happens when the device is inserted into the enclosure
+    // or if the magnetometer readings are weak enough to cut in and out
+    Debug.Log("Device tilted");
+    cardboard.trigger.ResetMagnetState();
+    ResetSpheres();
+  }
+
+  private void ChangeObjectColor(string name) {
     GameObject obj = GameObject.Find(name);
-    Color newColor = new Color(Random.value, Random.value, Random.value);
+    Color newColor = RandomColor();
     obj.GetComponent<Renderer>().material.color = newColor;
+  }
+
+  private void ResetObjectColor(string name) {
+    GameObject.Find(name).GetComponent<Renderer>().material.color = Color.white;
+  }
+
+  private void ResetSpheres() {
+    string[] spheres = { "SphereDown", "SphereUp", "SphereClick" };
+    foreach (string sphere in spheres) {
+      GameObject obj = GameObject.Find(sphere);
+      obj.GetComponent<Renderer>().material.color = Color.white;
+    }
+  }
+
+  private Color RandomColor() {
+    return new Color(Random.value, Random.value, Random.value);
   }
 
 
@@ -102,6 +149,8 @@ public class ExampleCharacterController : MonoBehaviour {
     cardboard.trigger.OnDown -= CardboardDown;
     cardboard.trigger.OnUp -= CardboardUp;
     cardboard.trigger.OnClick -= CardboardClick;
-    cardboard.gaze.OnChange -= CardboardFocus;
+    cardboard.gaze.OnChange -= CardboardGazeChange;
+    cardboard.gaze.OnStare -= CardboardStare;
+    cardboard.box.OnTilt -= CardboardMagnetReset;
   }
 }

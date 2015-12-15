@@ -22,14 +22,25 @@ public class ParsedTouchData {
   }
 
   public bool IsDown() {
+    // touchCount can jump for no reason in a Cardboard
+    // but it's too quick to be considered "Moved"
+    return Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved;
+  }
+
+  public bool StillDown() {
     return Input.touchCount > 0;
   }
 
   public bool IsUp() {
-    if (!IsDown() && wasTouched) {
+    if (!StillDown() && wasTouched) {
       wasTouched = false;
       return true;
     }
     return false;
+  }
+
+  public void PrintDebug() {
+    Debug.Log("--- Touch\ncount: " + Input.touchCount +
+              "\ntouched: " + wasTouched);
   }
 }

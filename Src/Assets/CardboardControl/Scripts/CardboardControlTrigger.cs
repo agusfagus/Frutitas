@@ -8,10 +8,14 @@ using CardboardControlDelegates;
 */
 public class CardboardControlTrigger : MonoBehaviour {
   public float clickSpeedThreshold = 0.4f;
+  public bool useEventCooldowns = true;
   public bool vibrateOnDown = false;
   public bool vibrateOnUp = false;
   public bool vibrateOnClick = true;
+  public bool useMagnet = true;
+  public bool useTouch = true;
   public KeyCode triggerKey = KeyCode.Space;
+  public bool printDebugInfo = false;
 
   private ParsedMagnetData magnet;
   private ParsedTouchData touch;
@@ -19,11 +23,17 @@ public class CardboardControlTrigger : MonoBehaviour {
   private TriggerState currentTriggerState = TriggerState.Up;
   private float clickStartTime = 0f;
 
+  private int debugThrottle = 0;
+  private int FRAMES_PER_DEBUG = 5;
+
+  private CardboardControl cardboard;
   public CardboardControlDelegate OnUp = delegate {};
   public CardboardControlDelegate OnDown = delegate {};
   public CardboardControlDelegate OnClick = delegate {};
 
+
   public void Start() {
+    cardboard = gameObject.GetComponent<CardboardControl>();
     magnet = new ParsedMagnetData();
     touch = new ParsedTouchData();
   }
@@ -31,9 +41,13 @@ public class CardboardControlTrigger : MonoBehaviour {
   public void Update() {
     magnet.Update();
     touch.Update();
-    CheckTouch();
-    CheckMagnet();
+    if (useTouch) CheckTouch();
+    if (useMagnet) CheckMagnet();
     CheckKey();
+  }
+
+  public void FixedUpdate() {
+    if (printDebugInfo) PrintDebug();
   }
 
   private bool KeyFor(string direction) {
@@ -48,24 +62,18 @@ public class CardboardControlTrigger : MonoBehaviour {
   }
 
   private void CheckKey() {
-    if (KeyFor("down")) ReportDown();
-    if (KeyFor("up")) ReportUp();
+    if (KeyFor("down") && cardboard.EventReady("OnDown")) ReportDown();
+    if (KeyFor("up") && cardboard.EventReady("OnUp")) ReportUp();
   }
 
   private void CheckMagnet() {
-    if (IsMagnetReady()) {
-      if (magnet.IsDown()) ReportDown();
-      if (magnet.IsUp()) ReportUp();
-    }
+    if (magnet.IsDown() && cardboard.EventReady("OnDown")) ReportDown();
+    if (magnet.IsUp() && cardboard.EventReady("OnUp")) ReportUp();
   }
 
   private void CheckTouch() {
-    if (touch.IsDown()) ReportDown();
-    if (touch.IsUp()) ReportUp();
-  }
-
-  private bool IsMagnetReady() {
-    return !(magnet.IsCalibrating() || magnet.IsJostled() || magnet.IsRotatedQuickly());
+    if (touch.IsDown() && cardboard.EventReady("OnDown")) ReportDown();
+    if (touch.IsUp() && cardboard.EventReady("OnUp")) ReportUp();
   }
 
   private bool IsTouching() {
@@ -93,7 +101,7 @@ public class CardboardControlTrigger : MonoBehaviour {
   private void CheckForClick() {
     bool withinClickThreshold = SecondsHeld() <= clickSpeedThreshold;
     clickStartTime = 0f;
-    if (withinClickThreshold) ReportClick();
+    if (withinClickThreshold && cardboard.EventReady("OnClick")) ReportClick();
   }
 
   private void ReportClick() {
@@ -109,30 +117,16 @@ public class CardboardControlTrigger : MonoBehaviour {
     return (currentTriggerState == TriggerState.Down);
   }
 
-  public string SensorChart() {
-    return MagnetChart() + "\n\n" + TouchChart();
+  public void ResetMagnetState() {
+    magnet.ResetState();
   }
 
-  public string MagnetChart() {
-    string chart = "Magnet Readings\n";
-    chart += !magnet.IsJostled() ? "***** steady " : "!!!!! jostled ";
-    if (!magnet.IsJostled()) {
-      chart += magnet.IsDown() ? "vvv " : "    ";
-      chart += magnet.IsUp() ? "^^^ " : "    ";
+  private void PrintDebug() {
+    debugThrottle++;
+    if (debugThrottle >= FRAMES_PER_DEBUG) {
+      magnet.PrintDebug();
+      touch.PrintDebug();
+      debugThrottle = 0;
     }
-    return chart;
-  }
-
-  public string TouchChart() {
-    string chart = "Touch Reading: ";
-    chart += IsTouching() ? "touching" : "--";
-    return chart;
-  }
-
-  public string StateChart() {
-    string chart = "";
-    chart += "Trigger State: ";
-    chart += IsHeld() ? "down" : "up";
-    return chart;
   }
 }

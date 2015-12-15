@@ -7,13 +7,19 @@ using CardboardControlDelegates;
 * Relies on Google Cardboard SDK API's
 */
 public class CardboardControlBox : MonoBehaviour {
+  public bool useEventCooldowns = true;
   public bool vibrateOnOrientationTilt = true;
   public KeyCode tiltKey = KeyCode.Tab;
 
   private const DeviceOrientation tiltedOrientation = DeviceOrientation.Portrait;
   private bool tiltReported = false; // triggered at the start
 
+  private CardboardControl cardboard;
   public CardboardControlDelegate OnTilt = delegate {};
+
+  public void Start() {
+    cardboard = gameObject.GetComponent<CardboardControl>();
+  }
 
   public void Update() {
     CheckOrientation();
@@ -30,7 +36,7 @@ public class CardboardControlBox : MonoBehaviour {
 
   private void CheckOrientation() {
     if (IsTilted() || KeyFor("tilt")) {
-      if (!tiltReported) ReportTilt();
+      if (!tiltReported && cardboard.EventReady("OnTilt")) ReportTilt();
       tiltReported = true;
     } else {
       tiltReported = false;

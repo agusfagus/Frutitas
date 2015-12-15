@@ -1,11 +1,6 @@
 fileFormatVersion: 2
 guid: a77ad2e16440d41f98f4614c391dcc09
-labels:
-- Android
-- Cardboard
-- Google
-- Delegate
-timeCreated: 1429334169
+timeCreated: 1441061517
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
