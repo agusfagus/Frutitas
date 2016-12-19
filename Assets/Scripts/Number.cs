@@ -9,6 +9,7 @@ public class Number : MonoBehaviour, IGvrGazeResponder {
 	// Use this for initialization
 	void Start () {
 		number = Random.Range (1, 100);
+		GetComponentInChildren<TextMesh> ().text = number.ToString ();
 	}
 	
 	// Update is called once per frame
@@ -31,8 +32,12 @@ public class Number : MonoBehaviour, IGvrGazeResponder {
 	public void OnGazeTrigger ()
 	{
 		Debug.Log ("Gaze Trigger");
-		Challenger.getChallenger ().onNumber (number);
+		Challenger.getChallenger ().onNumber (this);
 	}
 
 	#endregion
+
+	public int GetNumber() {
+		return number;
+	}
 }
