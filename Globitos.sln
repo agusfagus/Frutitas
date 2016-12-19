@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{D60DA5DE-2A8C-5DFC-3D57-4D0081C9C58F}") = "Globitos", "Assembly-CSharp.csproj", "{C67CFF1A-7E3B-93BC-A981-98C337379883}"
+EndProject
+Project("{D60DA5DE-2A8C-5DFC-3D57-4D0081C9C58F}") = "Globitos", "Assembly-CSharp-Editor.csproj", "{4AC15D70-5F80-900A-4129-D7F4257383A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C67CFF1A-7E3B-93BC-A981-98C337379883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C67CFF1A-7E3B-93BC-A981-98C337379883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C67CFF1A-7E3B-93BC-A981-98C337379883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C67CFF1A-7E3B-93BC-A981-98C337379883}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AC15D70-5F80-900A-4129-D7F4257383A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AC15D70-5F80-900A-4129-D7F4257383A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AC15D70-5F80-900A-4129-D7F4257383A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AC15D70-5F80-900A-4129-D7F4257383A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal
