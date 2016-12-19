@@ -25,12 +25,10 @@ public class MenuScript : MonoBehaviour {
 		}
 
 	public void PlayButton(){
-		Application.LoadLevel ("Main");
- 		// Disable VR
+		Scenes.Load("Main", "vr", "false");
 	}
 
 	public void  CardboardButton(){
-		Application.LoadLevel ("Main");
- 		// Enable VR
+		Scenes.Load("Main", "vr", "true");
 	}
 }
