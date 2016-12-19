@@ -22,6 +22,7 @@ public class BalloonSpawner : MonoBehaviour {
 			Vector3 position = new Vector3 (7, 1, 0);
 			position = Quaternion.Euler(0, Random.Range(0, 360), 0) * position;
 			GameObject ballon = (GameObject) Instantiate(balloonPrefab, position, Quaternion.identity);
+			ballon.transform.LookAt (Camera.main.transform);
 		}
 	}
 }
