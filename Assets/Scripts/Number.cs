@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Shoot : MonoBehaviour, IGvrGazeResponder {
+public class Number : MonoBehaviour, IGvrGazeResponder {
+
+	private int number;
 
 	// Use this for initialization
 	void Start () {
-		
+		number = Random.Range (1, 100);
 	}
 	
 	// Update is called once per frame
@@ -29,6 +31,7 @@ public class Shoot : MonoBehaviour, IGvrGazeResponder {
 	public void OnGazeTrigger ()
 	{
 		Debug.Log ("Gaze Trigger");
+		Challenger.getChallenger ().onNumber (number);
 	}
 
 	#endregion

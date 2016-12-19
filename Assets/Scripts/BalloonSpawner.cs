@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class BalloonSpawner : MonoBehaviour {
 
-	public Transform originObject;
 	public float tickTime = 5.0f;
+	public GameObject balloonPrefab;
 
 	private float nextActionTime = 0.0f;
 
@@ -19,6 +19,9 @@ public class BalloonSpawner : MonoBehaviour {
 		if (Time.time > nextActionTime ) {
 			nextActionTime += tickTime;
 			Debug.Log ("Repeat");
+			Vector3 position = new Vector3 (7, 1, 0);
+			position = Quaternion.Euler(0, Random.Range(0, 360), 0) * position;
+			GameObject ballon = (GameObject) Instantiate(balloonPrefab, position, Quaternion.identity);
 		}
 	}
 }

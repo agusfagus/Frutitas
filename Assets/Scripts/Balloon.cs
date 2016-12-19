@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Balloon : MonoBehaviour {
 
-	public float force = 100f;
+	public float force = 10f;
 
 	// Use this for initialization
 	void Start () {
