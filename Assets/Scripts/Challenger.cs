@@ -4,6 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Challenger : MonoBehaviour {
+
+	public GameObject correctPrefab;
+	public GameObject wrongPrefab;
+
 	private static int CHALLENGE_GOAL = 10;
 	private Challenge[] challenges;
 	private int currentChallenge;
@@ -40,10 +44,12 @@ public class Challenger : MonoBehaviour {
 //			if (score > CHALLENGE_GOAL * (currentChallenge+1)) {
 //				NextChallenge ();
 //			}
+			ShowFeedback(correctPrefab, numberObject.transform.position);
 		} else {
 			score -= 1;
 			if (score < 0)
 				score = 0;
+			ShowFeedback (wrongPrefab, numberObject.transform.position);
 		}
 		Debug.Log ("Score: " + score);
 		scoreText.text = score.ToString ();
@@ -52,6 +58,12 @@ public class Challenger : MonoBehaviour {
 
 	private Challenge GetChallenge() {
 		return challenges [currentChallenge];
+	}
+
+	private void ShowFeedback(GameObject prefab, Vector3 position) {
+		GameObject feedback = Instantiate(prefab, position, Quaternion.identity);
+		feedback.transform.LookAt (Camera.main.transform.position);
+		Destroy (feedback, 4.0f);
 	}
 
 	private void NextChallenge() {

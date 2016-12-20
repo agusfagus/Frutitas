@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BalloonSpawner : MonoBehaviour {
 
-	public float tickTime = 5.0f;
+	public float tickTime = 3.0f;
 	public GameObject balloonPrefab;
 
 	private float nextActionTime = 0.0f;
