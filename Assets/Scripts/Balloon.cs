@@ -4,15 +4,18 @@ using UnityEngine;
 
 public class Balloon : MonoBehaviour {
 
-	public float force = 10f;
+	public Material[] materials;
+	private static int HEIGHT_LIMIT = 15;
 
 	// Use this for initialization
 	void Start () {
-		GetComponent<Rigidbody> ().AddForce (force * Vector3.up);
+		GetComponent<Renderer>().material = materials[Random.Range(0,materials.Length)];
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
+		if (transform.position.y > HEIGHT_LIMIT || transform.position.y < -5) {
+			Destroy (gameObject);
+		}
 	}
 }

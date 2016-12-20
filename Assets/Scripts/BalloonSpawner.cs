@@ -19,7 +19,7 @@ public class BalloonSpawner : MonoBehaviour {
 		if (Time.time > nextActionTime ) {
 			nextActionTime += tickTime;
 			Debug.Log ("Repeat");
-			Vector3 position = new Vector3 (Random.Range(5, 8), 1, 0);
+			Vector3 position = new Vector3 (Random.Range(5, 8), 2.5f, 0);
 			position = Quaternion.Euler(0, Random.Range(0, 360), 0) * position;
 			GameObject ballon = (GameObject) Instantiate(balloonPrefab, position, Quaternion.identity);
 			ballon.transform.LookAt (Camera.main.transform);

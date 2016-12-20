@@ -99,6 +99,7 @@
      <Compile Include="Assets\Scripts\Challenger.cs" />
      <Compile Include="Assets\Scripts\MenuScript.cs" />
      <Compile Include="Assets\Scripts\Number.cs" />
+     <Compile Include="Assets\Scripts\RopeScript.cs" />
      <Compile Include="Assets\Scripts\Scenes.cs" />
      <Compile Include="Assets\VrEnabler.cs" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
