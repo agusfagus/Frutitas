@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
-using UnityEngine.SceneManagement;public static class Scenes {
+using UnityEngine.SceneManagement;
+
+public static class Scenes {
 
 	private static Dictionary<string, string> parameters;
 

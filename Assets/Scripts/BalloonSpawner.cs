@@ -16,7 +16,7 @@ public class BalloonSpawner : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (Time.time > nextActionTime ) {
+		if (Time.timeSinceLevelLoad > nextActionTime ) {
 			nextActionTime += tickTime;
 			Debug.Log ("Repeat");
 			Vector3 position = new Vector3 (Random.Range(5, 8), 2.5f, 0);
