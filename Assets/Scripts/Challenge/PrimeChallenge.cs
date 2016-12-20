@@ -14,6 +14,16 @@ public class PrimeChallenge : Challenge {
 
 	#region Challenge implementation
 
+	public string message ()
+	{
+		return "Shoot the balloons with Prime Numbers";
+	}
+
+	public string shortMessage ()
+	{
+		return "Shoot the primes";
+	}
+
 	public bool verify (int number)
 	{
 		int pos = Array.IndexOf(PRIME_NUMBERS, number);
