@@ -23,8 +23,8 @@ public class BalloonSpawner : MonoBehaviour {
 			position = Quaternion.Euler(0, Random.Range(0, 360), 0) * position;
 			GameObject ballon = (GameObject) Instantiate(balloonPrefab, position, Quaternion.identity);
 			ballon.transform.LookAt (Camera.main.transform);
-			if (tickTime > 1.0f) {
-				tickTime *= 0.9f;
+			if (tickTime > 1.5f) {
+				tickTime *= 0.95f;
 			}
 		}
 	}
